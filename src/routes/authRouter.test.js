@@ -12,20 +12,13 @@ const adminUser = {
   password: "a",
   roles: [{ role: Role.Admin }],
 };
-const franchiseeUser = {
-  name: "pizza franchisee",
-  password: "a",
-  roles: [{ role: Role.Franchisee }],
-};
 const testUsers = {
   admin: adminUser,
   diner: dinerUser,
-  franchisee: franchiseeUser,
 };
 
 let dinerUserAuthToken;
 let adminUserAuthToken;
-let franchiseeUserAuthToken;
 
 async function createUser(user) {
   user.email = randomName() + "@admin.com";
@@ -61,28 +54,27 @@ async function loginUser(user) {
   expect(loginRes.body.token).toMatch(
     /^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/
   );
+  setLocalAuthToken(user, loginRes.body.token);
   return loginRes;
 }
 
 beforeAll(async () => {
-  Object.entries(testUsers).forEach(async ([role, user]) => {
-    console.log(user);
+  const userPromises = Object.entries(testUsers).map(async ([role, user]) => {
     const createdUser = await createUser(user);
-    testUsers.role = createdUser;
+    testUsers[role] = createdUser;
   });
-  console.log(testUsers);
+
+  await Promise.all(userPromises);
 });
 
-test("Login with diner user", async () => {
-  const loginRes = await loginUser(dinerUser);
-  const { password, ...user } = { ...dinerUser, roles: [{ role: "diner" }] };
-  expect(loginRes.body.user).toMatchObject(user);
-  expect(password).toBe("a");
-});
-
-test("Login with admin user", async () => {
-  const loginRes = await loginUser(adminUser);
-  const { password, ...user } = { ...adminUser, roles: [{ role: "admin" }] };
-  expect(loginRes.body.user).toMatchObject(user);
-  expect(password).toBe("a");
-});
+for (const [role, testUser] of Object.entries(testUsers)) {
+  test(`Login with ${role} user`, async () => {
+    const loginRes = await loginUser(testUser);
+    const { password, ...user } = {
+      ...(role === "diner" ? dinerUser : adminUser),
+      roles: [{ role }],
+    };
+    expect(loginRes.body.user).toMatchObject(user);
+    expect(password).toBe("a");
+  });
+}
