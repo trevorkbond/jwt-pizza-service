@@ -1,6 +1,6 @@
 const request = require("supertest");
 const app = require("../service");
-const { DB, Role } = require("../database/database.js");
+const { DB } = require("../database/database.js");
 const {
   dinerUser,
   adminUser,
@@ -9,6 +9,7 @@ const {
   randomName,
   loginUser,
   registerUser,
+  getDatabaseUser,
 } = require("./userCreation.js");
 
 beforeAll(async () => {
@@ -78,7 +79,7 @@ test("update user success", async () => {
   const admin = await createUser(adminUser);
   const loginRes = await loginUser(admin);
   const authToken = loginRes.body.token;
-  const { id } = await DB.getUser(admin.email, admin.password);
+  const { id } = await getDatabaseUser(admin);
   admin.email = randomName() + "@email.com";
   admin.password = "newpassword";
   const updateRes = await request(app)

@@ -46,6 +46,25 @@ async function registerUser(user) {
   };
 }
 
+async function createUserAndGetAuthToken(user) {
+  const createdUser = await createUser(user);
+  const loginRes = await loginUser(user);
+  const authToken = loginRes.body.token;
+  return { createdUser, authToken };
+}
+
+async function createAdminAndGetAuthToken() {
+  return await createUserAndGetAuthToken(adminUser);
+}
+
+async function createDinerAndGetAuthToken() {
+  return await createUserAndGetAuthToken(dinerUser);
+}
+
+async function getDatabaseUser(user) {
+  return await DB.getUser(user.email, user.password);
+}
+
 module.exports = {
   dinerUser,
   adminUser,
@@ -54,4 +73,7 @@ module.exports = {
   randomName,
   loginUser,
   registerUser,
+  createAdminAndGetAuthToken,
+  createDinerAndGetAuthToken,
+  getDatabaseUser,
 };
