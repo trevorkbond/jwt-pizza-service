@@ -57,3 +57,23 @@ test("list franchises with actual franchises success", async () => {
   });
   expect(franchises).toMatchObject(franchisesToAdd);
 });
+
+test("delete franchise success", async () => {
+  const { createdUser, authToken } = await createAndVerifyFranchisee();
+  const franchiseToAdd = {
+    name: randomName(),
+    admins: [{ email: createdUser.email }],
+  };
+  const addRes = await request(app)
+    .post("/api/franchise")
+    .set("Authorization", `Bearer: ${authToken}`)
+    .send(franchiseToAdd);
+
+  const franchiseId = addRes.body.id;
+  const deleteRes = await request(app)
+    .delete(`/api/franchise/${franchiseId}`)
+    .set("Authorization", `Bearer: ${authToken}`)
+    .send();
+  expect(deleteRes.status).toBe(200);
+  expect(deleteRes.body.message).toBe("franchise deleted");
+});
