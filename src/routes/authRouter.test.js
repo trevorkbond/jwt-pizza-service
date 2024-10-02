@@ -117,16 +117,26 @@ test("logout failure", async () => {
   expect(logoutRes.status).toBe(401);
 });
 
-// test("logout success", async () => {
-//   const { user } = await registerUser(dinerUser);
-//   const logoutRes = await request(app).delete("/api/auth").send(user);
-//   expect(logoutRes.status).toBe(200);
-// });
+test("logout success", async () => {
+  const { registerRes, user } = await registerUser(dinerUser);
+  const authToken = registerRes.body.token;
+  const logoutRes = await request(app)
+    .delete("/api/auth")
+    .set("Authorization", `Auth: ${authToken}`)
+    .send(user);
+  expect(logoutRes.status).toBe(200);
+});
 
 test("update user success", async () => {
   const admin = await createUser(adminUser);
-  console.log(admin);
+  const loginRes = await loginUser(admin);
+  const authToken = loginRes.body.token;
+  const { id } = await DB.getUser(admin.email, admin.password);
   admin.email = randomName() + "@email.com";
   admin.password = "newpassword";
-  // const updateRes = await request(app).put
+  const updateRes = await request(app)
+    .put(`/api/auth/${id}`)
+    .set("Authorization", `Auth: ${authToken}`)
+    .send(admin);
+  expect(updateRes.status).toBe(200);
 });
