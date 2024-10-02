@@ -1,6 +1,10 @@
 const request = require("supertest");
 const app = require("../service");
-const { createAdminAndGetAuthToken, randomName } = require("./userCreation.js");
+const {
+  createAdminAndGetAuthToken,
+  randomName,
+  createDinerAndGetAuthToken,
+} = require("./userCreation.js");
 
 test("get menu", async () => {
   const menuRes = await request(app).get("/api/order/menu").send();
