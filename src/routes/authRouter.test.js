@@ -17,9 +17,6 @@ const testUsers = {
   diner: dinerUser,
 };
 
-let dinerUserAuthToken;
-let adminUserAuthToken;
-
 async function createUser(user) {
   user.email = randomName() + "@admin.com";
 
@@ -29,20 +26,20 @@ async function createUser(user) {
   return user;
 }
 
-function setLocalAuthToken(user, authToken) {
-  const userRole = user.roles[0].role;
-  switch (userRole) {
-    case Role.Admin:
-      adminUserAuthToken = authToken;
-      break;
-    case Role.Diner:
-      dinerUserAuthToken = authToken;
-      break;
-    case Role.Franchisee:
-      franchiseeUserAuthToken = authToken;
-      break;
-  }
-}
+// function setLocalAuthToken(user, authToken) {
+//   const userRole = user.roles[0].role;
+//   switch (userRole) {
+//     case Role.Admin:
+//       adminUserAuthToken = authToken;
+//       break;
+//     case Role.Diner:
+//       dinerUserAuthToken = authToken;
+//       break;
+//     case Role.Franchisee:
+//       franchiseeUserAuthToken = authToken;
+//       break;
+//   }
+// }
 
 function randomName() {
   return Math.random().toString(36).substring(2, 12);
@@ -54,8 +51,17 @@ async function loginUser(user) {
   expect(loginRes.body.token).toMatch(
     /^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/
   );
-  setLocalAuthToken(user, loginRes.body.token);
+  // setLocalAuthToken(user, loginRes.body.token);
   return loginRes;
+}
+
+async function registerUser(user) {
+  user.email = randomName() + "@test.com";
+  const registerRes = await request(app).post("/api/auth").send(user);
+  return {
+    registerRes: registerRes,
+    user: user,
+  };
 }
 
 beforeAll(async () => {
@@ -68,7 +74,7 @@ beforeAll(async () => {
 });
 
 for (const [role, testUser] of Object.entries(testUsers)) {
-  test(`Login with ${role} user`, async () => {
+  test(`Login with ${role} user success`, async () => {
     const loginRes = await loginUser(testUser);
     const { password, ...user } = {
       ...(role === "diner" ? dinerUser : adminUser),
@@ -78,3 +84,49 @@ for (const [role, testUser] of Object.entries(testUsers)) {
     expect(password).toBe("a");
   });
 }
+
+test("Login with nonexistant user failure", async () => {
+  const fakeUser = {
+    email: randomName() + "@fake.com",
+    password: randomName(),
+  };
+  const loginRes = await request(app).put("/api/auth").send(fakeUser);
+  expect(loginRes.status).toBe(404);
+});
+
+test("register a user success", async () => {
+  const { registerRes } = await registerUser(dinerUser);
+  expect(registerRes.status).toBe(200);
+  expect(registerRes.body.token).toMatch(
+    /^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/
+  );
+});
+
+test("register a user failure", async () => {
+  const badUser = { blah: "blah" };
+  const registerRes = await request(app).post("/api/auth").send(badUser);
+  expect(registerRes.status).toBe(400);
+  expect(registerRes.body.message).toBe(
+    "name, email, and password are required"
+  );
+});
+
+test("logout failure", async () => {
+  const newUser = await createUser(dinerUser);
+  const logoutRes = await request(app).delete("/api/auth").send(newUser);
+  expect(logoutRes.status).toBe(401);
+});
+
+// test("logout success", async () => {
+//   const { user } = await registerUser(dinerUser);
+//   const logoutRes = await request(app).delete("/api/auth").send(user);
+//   expect(logoutRes.status).toBe(200);
+// });
+
+test("update user success", async () => {
+  const admin = await createUser(adminUser);
+  console.log(admin);
+  admin.email = randomName() + "@email.com";
+  admin.password = "newpassword";
+  // const updateRes = await request(app).put
+});
