@@ -26,3 +26,15 @@ test("add menu item success", async () => {
   addedMenu.forEach((item) => delete item.id);
   expect(addedMenu).toContainEqual(menuItemToAdd);
 });
+
+test("get orders success", async () => {
+  const { authToken } = await createAdminAndGetAuthToken();
+  const orderRes = await request(app)
+    .get("/api/order")
+    .set("Authorization", `Bearer: ${authToken}`)
+    .send();
+  expect(orderRes.status).toBe(200);
+
+  // haven't made any orders
+  expect(orderRes.body.orders.length).toBe(0);
+});
