@@ -33,6 +33,7 @@ test("list franchises with actual franchises success", async () => {
   for (let i = 0; i < 5; i++) {
     franchisesToAdd.push({
       admins: [{ email: createdUser.email }],
+      id: id,
       name: randomName(),
     });
   }
@@ -49,11 +50,19 @@ test("list franchises with actual franchises success", async () => {
     .set("Authorization", `Auth: ${authToken}`)
     .send(createdUser);
   expect(franchiseRes.status).toBe(200);
-  const franchises = franchiseRes.body;
-  franchises.forEach((franchise) => {
-    delete franchise.id;
+  const receivedFranchises = franchiseRes.body;
+
+  // the response changes the structure of
+  // the franchiseRes drastically
+  // I know that if the right names are there
+  // that all of the franchises were added
+  franchisesToAdd.forEach((franchise) => {
+    expect(receivedFranchises).toContainEqual(
+      expect.objectContaining({
+        name: franchise.name,
+      })
+    );
   });
-  // expect(franchises).toMatchObject(franchisesToAdd); TODO: figure out why this fails in CI pipeline
 });
 
 test("delete franchise success", async () => {
