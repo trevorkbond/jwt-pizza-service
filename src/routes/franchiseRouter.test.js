@@ -18,6 +18,20 @@ async function createAndVerifyFranchisee() {
   return { createdUser, authToken, id };
 }
 
+async function createFranchise() {
+  const { createdUser, authToken } = await createAndVerifyFranchisee();
+  const franchiseToAdd = {
+    name: randomName(),
+    admins: [{ email: createdUser.email }],
+  };
+  const addRes = await request(app)
+    .post("/api/franchise")
+    .set("Authorization", `Bearer: ${authToken}`)
+    .send(franchiseToAdd);
+  const franchiseId = addRes.body.id;
+  return { franchiseId, authToken };
+}
+
 test("list franchises success", async () => {
   const franchiseRes = await request(app).get("/api/franchise").send();
   expect(franchiseRes.status).toBe(200);
@@ -66,21 +80,20 @@ test("list franchises with actual franchises success", async () => {
 });
 
 test("delete franchise success", async () => {
-  const { createdUser, authToken } = await createAndVerifyFranchisee();
-  const franchiseToAdd = {
-    name: randomName(),
-    admins: [{ email: createdUser.email }],
-  };
-  const addRes = await request(app)
-    .post("/api/franchise")
-    .set("Authorization", `Bearer: ${authToken}`)
-    .send(franchiseToAdd);
-
-  const franchiseId = addRes.body.id;
+  const { franchiseId, authToken } = await createFranchise();
   const deleteRes = await request(app)
     .delete(`/api/franchise/${franchiseId}`)
     .set("Authorization", `Bearer: ${authToken}`)
     .send();
   expect(deleteRes.status).toBe(200);
   expect(deleteRes.body.message).toBe("franchise deleted");
+});
+
+test("create and delete store", async () => {
+  const { franchiseId, authToken } = await createFranchise();
+  const addRes = await request(app)
+    .post(`/api/franchise/${franchiseId}/store`)
+    .set("Authorization", `Bearer: ${authToken}`)
+    .send({ franchiseId: franchiseId, name: randomName() });
+  expect(addRes.status).toBe(200);
 });
