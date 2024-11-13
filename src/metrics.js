@@ -1,5 +1,6 @@
 const os = require("os");
-const config = require("../config.json");
+const config = require("./config.js");
+const metricSource = config.metrics.source;
 
 class Metrics {
   constructor() {
@@ -8,10 +9,10 @@ class Metrics {
     this.numPostRequests = 0;
     this.numPutRequests = 0;
     this.numDeleteRequests = 0;
-    this.metricSource = config.source;
-    this.apiKey = config.apiKey;
-    this.userId = config.userId;
-    this.metricsUrl = config.url;
+    this.metricSource = config.metrics.source;
+    this.apiKey = config.metrics.apiKey;
+    this.userId = config.metrics.userId;
+    this.metricsUrl = config.metrics.url;
     this.numActiveUsers = 0;
     this.failedLogins = 0;
     this.successfulLogins = 0;
@@ -48,7 +49,8 @@ class Metrics {
   }
 
   sendMetricToGrafana(metric) {
-    fetch(`${config.url}`, {
+    console.log(metric);
+    fetch(`${this.metricsUrl}`, {
       method: "post",
       body: metric,
       headers: { Authorization: `Bearer ${this.userId}:${this.apiKey}` },
@@ -229,7 +231,7 @@ class MetricBuilder {
 
   addMetric(metricPrefix, key, value, metricName, metricValue) {
     this.metrics.push(
-      `${metricPrefix},source=${config.source},${key}=${value} ${metricName}=${metricValue}`
+      `${metricPrefix},source=${metricSource},${key}=${value} ${metricName}=${metricValue}`
     );
   }
 
