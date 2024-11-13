@@ -49,7 +49,6 @@ class Metrics {
   }
 
   sendMetricToGrafana(metric) {
-    console.log(metric);
     fetch(`${this.metricsUrl}`, {
       method: "post",
       body: metric,
