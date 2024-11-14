@@ -20,32 +20,19 @@ class Metrics {
     this.successfulOrders = 0;
     this.failedOrders = 0;
 
-    this.requestDurations = [];
-    this.pizzaCreationDurations = [];
-    this.maxDurationsToKeep = 100;
+    this.requestDuration = 0;
+    this.pizzaDuration = 0;
 
     this.requestTracker = this.requestTracker.bind(this);
     this.sendMetricsPeriodically(10000);
   }
 
   recordRequestDuration(duration) {
-    this.requestDurations.push(duration);
-    if (this.requestDurations.length > this.maxDurationsToKeep) {
-      this.requestDurations.shift();
-    }
+    this.requestDuration += duration;
   }
 
   recordPizzaDuration(duration) {
-    this.pizzaCreationDurations.push(duration);
-    if (this.pizzaCreationDurations.length > this.maxDurationsToKeep) {
-      this.pizzaCreationDurations.shift();
-    }
-  }
-
-  getAverageDuration(durations) {
-    if (!durations || durations.length === 0) return 0;
-    const sum = durations.reduce((acc, curr) => acc + curr, 0);
-    return sum / durations.length;
+    this.pizzaDuration += duration;
   }
 
   sendMetricToGrafana(metric) {
@@ -164,15 +151,15 @@ class Metrics {
       "request",
       "duration",
       "avg",
-      "avg_duration",
-      this.getAverageDuration(this.requestDurations)
+      "duration",
+      this.requestDuration
     );
     buf.addMetric(
       "request",
       "duration",
       "avg",
-      "pizza_duration",
-      this.getAverageDuration(this.pizzaCreationDurations)
+      "pizza_avg_duration",
+      this.pizzaDuration
     );
   }
 
