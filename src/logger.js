@@ -10,7 +10,8 @@ class Logger {
         method: req.method,
         statusCode: res.statusCode,
         reqBody: JSON.stringify(req.body),
-        resBody: JSON.stringify(resBody),
+        resBody:
+          typeof resBody === "string" ? resBody : JSON.stringify(resBody), // Only stringify if not already a string
       };
       const level = this.statusToLogLevel(res.statusCode);
       this.log(level, "http", logData);
@@ -43,10 +44,12 @@ class Logger {
   }
 
   sanitize(logData) {
-    logData = JSON.stringify(logData);
-    return logData.replace(
-      /\\"password\\":\s*\\"[^"]*\\"/g,
-      '\\"password\\": \\"*****\\"'
+    // Don't stringify if it's already a string
+    const logString =
+      typeof logData === "string" ? logData : JSON.stringify(logData);
+    return logString.replace(
+      /\\"(password|jwt|token)\\":\s*\\"[^"]*\\"/g,
+      '\\"$1\\": \\"*****\\"'
     );
   }
 

@@ -59,6 +59,11 @@ app.use((err, req, res, next) => {
     err.statusCode === 404
   ) {
     metrics.incrementFailedLogins();
+  } else if (!err.statusCode) {
+    logger.log("error", "http", {
+      statusCode: 500,
+      resBody: err.message,
+    });
   }
   res
     .status(err.statusCode ?? 500)

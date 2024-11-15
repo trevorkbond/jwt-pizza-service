@@ -4,6 +4,7 @@ const { Role, DB } = require("../database/database.js");
 const { authRouter } = require("./authRouter.js");
 const { asyncHandler, StatusCodeError } = require("../endpointHelper.js");
 const metrics = require("../metrics.js");
+const logger = require("../logger.js");
 
 const orderRouter = express.Router();
 
@@ -137,9 +138,17 @@ orderRouter.post(
         return total + (item.price || 0);
       }, 0);
       metrics.recordSuccessfulOrder(orderTotal);
+      logger.log("info", "factory", {
+        statusCode: r.status,
+        resBody: JSON.stringify(j),
+      });
       res.send({ order, jwt: j.jwt, reportUrl: j.reportUrl });
     } else {
       metrics.recordFailedOrder();
+      logger.log("error", "factory", {
+        resBody: JSON.stringify(j),
+        statusCode: r.status,
+      });
       res.status(500).send({
         message: "Failed to fulfill order at factory",
         reportUrl: j.reportUrl,
