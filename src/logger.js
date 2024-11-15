@@ -1,5 +1,4 @@
 const config = require("./config.js");
-const loggerSource = config.logging.source;
 
 class Logger {
   httpLogger = (req, res, next) => {
@@ -24,7 +23,7 @@ class Logger {
 
   log(level, type, logData) {
     const labels = {
-      component: loggerSource,
+      component: config.logging.source,
       level: level,
       type: type,
     };
