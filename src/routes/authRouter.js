@@ -153,10 +153,10 @@ authRouter.put(
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     if (!req.user.isRole(Role.Admin)) {
-      throw new StatusCodeError("unknown endpoint", 404);
+      throw new Error("unknown endpoint", 404);
     }
 
-    enableChaos = req.params.state === "true";
+    const enableChaos = req.params.state === "true";
     metrics.recordChaos(enableChaos);
     res.json({ chaos: enableChaos });
   })
