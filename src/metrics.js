@@ -19,6 +19,7 @@ class Metrics {
     this.revenue = 0;
     this.successfulOrders = 0;
     this.failedOrders = 0;
+    this.chaos = false;
 
     this.requestDuration = 0;
     this.pizzaDuration = 0;
@@ -102,6 +103,10 @@ class Metrics {
 
   recordFailedOrder() {
     this.failedOrders++;
+  }
+
+  recordChaos(newChaos) {
+    this.chaos = newChaos;
   }
 
   requestTracker(req, res, next) {
@@ -190,6 +195,10 @@ class Metrics {
     buf.addMetric("purchase", "purchase", "revenue", "revenue", this.revenue);
   }
 
+  chaosMetrics(buf) {
+    buf.addMetric("chaos", "chaos", "enabled", "enabled", this.chaos);
+  }
+
   sendMetricsPeriodically(period) {
     const timer = setInterval(() => {
       try {
@@ -199,6 +208,7 @@ class Metrics {
         this.userMetrics(buf);
         this.purchaseMetrics(buf);
         this.authMetrics(buf);
+        this.chaosMetrics(buf);
 
         const metrics = buf.toString();
         this.sendMetricToGrafana(metrics);
