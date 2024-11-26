@@ -142,11 +142,7 @@ orderRouter.post(
         statusCode: r.status,
         resBody: JSON.stringify(j),
       });
-      // res.send({ order, jwt: j.jwt, reportUrl: j.reportUrl });
-      res.status(500).send({
-        message: "Failed to fulfill order at factory",
-        reportUrl: j.reportUrl,
-      });
+      res.send({ order, jwt: j.jwt, reportUrl: j.reportUrl });
     } else {
       metrics.recordFailedOrder();
       logger.log("error", "factory", {
