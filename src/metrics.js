@@ -161,7 +161,7 @@ class Metrics {
     );
     buf.addMetric(
       "request",
-      "duration",
+      "pizza_duration",
       "avg",
       "pizza_avg_duration",
       this.pizzaDuration
