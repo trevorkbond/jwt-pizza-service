@@ -129,10 +129,10 @@ orderRouter.post(
         order,
       }),
     });
+    const j = await r.json();
     const hrDuration = process.hrtime(startTime);
     const durationInMs = hrDuration[0] * 1000 + hrDuration[1] / 1000000;
     metrics.recordPizzaDuration(durationInMs);
-    const j = await r.json();
     if (r.ok) {
       const orderTotal = orderReq.items.reduce((total, item) => {
         return total + (item.price || 0);
